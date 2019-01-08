@@ -35,7 +35,7 @@ import (
 	pconfig "github.com/prometheus/common/config"
 	"golang.org/x/net/publicsuffix"
 
-	"github.com/prometheus/blackbox_exporter/config"
+	"github.com/netguru/blackbox_exporter/config"
 )
 
 func matchRegularExpressions(reader io.Reader, httpConfig config.HTTPProbe, logger log.Logger) bool {
@@ -172,6 +172,15 @@ func ProbeHTTP(ctx context.Context, target string, module config.Module, registr
 			Name: "probe_failed_due_to_regex",
 			Help: "Indicates if probe failed due to regex",
 		})
+
+		probeSSLLetsencryptGauge = prometheus.NewGauge(prometheus.GaugeOpts{
+			Name: "probe_ssl_letsencrypt",
+			Help: "Indicates if the cert is issued by letsencrypt",
+		})
+		probeSSLIssuerGauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Name: "probe_ssl_issuer",
+			Help: "Returns the certificate issuer of the probe response",
+		}, []string{"issuer"})
 	)
 
 	for _, lv := range []string{"resolve", "connect", "tls", "processing", "transfer"} {
@@ -408,6 +417,29 @@ func ProbeHTTP(ctx context.Context, target string, module config.Module, registr
 		isSSLGauge.Set(float64(1))
 		registry.MustRegister(probeSSLEarliestCertExpiryGauge)
 		probeSSLEarliestCertExpiryGauge.Set(float64(getEarliestCertExpiry(resp.TLS).Unix()))
+
+		registry.MustRegister(probeSSLLetsencryptGauge)
+		letsencryptOrg := httpConfig.Letsencrypt.Org
+		if letsencryptOrg == "" {
+			letsencryptOrg = "letsencrypt"
+		}
+		isLetsencryptOrg := 0.0
+		if resp.TLS.PeerCertificates != nil {
+			for _, c := range resp.TLS.PeerCertificates {
+				if c.Issuer.Organization[0] == letsencryptOrg {
+					isLetsencryptOrg = 1.0
+				}
+			}
+		}
+		probeSSLLetsencryptGauge.Set(isLetsencryptOrg)
+
+		registry.MustRegister(probeSSLIssuerGauge)
+		if resp.TLS.PeerCertificates != nil &&
+			len(resp.TLS.PeerCertificates) > 0 {
+			probeSSLIssuerGauge.WithLabelValues(resp.TLS.PeerCertificates[0].Issuer.Organization[0]).Set(1.0)
+
+		}
+
 		if httpConfig.FailIfSSL {
 			level.Error(logger).Log("msg", "Final request was over SSL")
 			success = false

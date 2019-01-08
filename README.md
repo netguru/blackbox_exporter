@@ -1,7 +1,7 @@
 # Blackbox exporter [![Build Status](https://travis-ci.org/prometheus/blackbox_exporter.svg)][travis]
 
-[![CircleCI](https://circleci.com/gh/prometheus/blackbox_exporter/tree/master.svg?style=shield)][circleci]
-[![Docker Repository on Quay](https://quay.io/repository/prometheus/blackbox-exporter/status)][quay]
+[![CircleCI](https://circleci.com/gh/netguru/blackbox_exporter/tree/master.svg?style=shield)][circleci]
+[![Docker Repository on Quay](https://quay.io/repository/netguru/blackbox-exporter/status)][quay]
 [![Docker Pulls](https://img.shields.io/docker/pulls/prom/blackbox-exporter.svg?maxAge=604800)][hub]
 
 The blackbox exporter allows blackbox probing of endpoints over

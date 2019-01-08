@@ -34,11 +34,11 @@ import (
 	"github.com/prometheus/common/promlog"
 	"github.com/prometheus/common/promlog/flag"
 	"github.com/prometheus/common/version"
-	"gopkg.in/alecthomas/kingpin.v2"
-	"gopkg.in/yaml.v2"
+	kingpin "gopkg.in/alecthomas/kingpin.v2"
+	yaml "gopkg.in/yaml.v2"
 
-	"github.com/prometheus/blackbox_exporter/config"
-	"github.com/prometheus/blackbox_exporter/prober"
+	"github.com/netguru/blackbox_exporter/config"
+	"github.com/netguru/blackbox_exporter/prober"
 )
 
 var (
@@ -46,11 +46,12 @@ var (
 		C: &config.Config{},
 	}
 
-	configFile    = kingpin.Flag("config.file", "Blackbox exporter configuration file.").Default("blackbox.yml").String()
-	listenAddress = kingpin.Flag("web.listen-address", "The address to listen on for HTTP requests.").Default(":9115").String()
-	timeoutOffset = kingpin.Flag("timeout-offset", "Offset to subtract from timeout in seconds.").Default("0.5").Float64()
-	configCheck   = kingpin.Flag("config.check", "If true validate the config file and then exit.").Default().Bool()
-	historyLimit  = kingpin.Flag("history.limit", "The maximum amount of items to keep in the history.").Default("100").Uint()
+	configFile        = kingpin.Flag("config.file", "Blackbox exporter configuration file.").Default("blackbox.yml").String()
+	listenAddress     = kingpin.Flag("web.listen-address", "The address to listen on for HTTP requests.").Default(":9115").String()
+	timeoutOffset     = kingpin.Flag("timeout-offset", "Offset to subtract from timeout in seconds.").Default("0.5").Float64()
+	configCheck       = kingpin.Flag("config.check", "If true validate the config file and then exit.").Default().Bool()
+	historyLimit      = kingpin.Flag("history.limit", "The maximum amount of items to keep in the history.").Default("100").Uint()
+	letsencryptIssuer = kingpin.Flag("letsencrypt.org", "Issuer organisation for letsencrypt certificate").Default("letsencrypt").String()
 
 	Probers = map[string]prober.ProbeFn{
 		"http": prober.ProbeHTTP,

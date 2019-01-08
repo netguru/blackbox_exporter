@@ -50,6 +50,10 @@ type Module struct {
 	DNS     DNSProbe      `yaml:"dns,omitempty"`
 }
 
+type Letsencrypt struct {
+	Org string `yaml:"org,omitempty"`
+}
+
 type HTTPProbe struct {
 	// Defaults to 2xx.
 	ValidStatusCodes       []int                   `yaml:"valid_status_codes,omitempty"`
@@ -65,6 +69,7 @@ type HTTPProbe struct {
 	FailIfNotMatchesRegexp []string                `yaml:"fail_if_not_matches_regexp,omitempty"`
 	Body                   string                  `yaml:"body,omitempty"`
 	HTTPClientConfig       config.HTTPClientConfig `yaml:"http_client_config,inline"`
+	Letsencrypt            Letsencrypt             `yaml:"letsencrypt,omitempty"`
 }
 
 type QueryResponse struct {

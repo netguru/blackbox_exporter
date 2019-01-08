@@ -2,6 +2,8 @@ modules:
   http_2xx:
     prober: http
     http:
+      letsencrypt:
+        org: "letsencrypt"
   http_post_2xx:
     prober: http
     http:
