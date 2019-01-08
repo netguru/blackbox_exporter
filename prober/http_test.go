@@ -534,7 +534,6 @@ func TestSucceedIfCAIssuerAcmeCo(t *testing.T) {
 					}
 				}
 			}
-
 		}
 	}
 	if !found {
