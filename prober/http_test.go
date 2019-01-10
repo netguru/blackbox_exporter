@@ -466,84 +466,6 @@ func TestSucceedIfSelfSignedCA(t *testing.T) {
 	checkRegistryResults(expectedResults, mfs, t)
 }
 
-func TestSucceedIfCALetsencrypt(t *testing.T) {
-	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-	}))
-	defer ts.Close()
-
-	recorder := httptest.NewRecorder()
-	registry := prometheus.NewRegistry()
-	testCTX, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	result := ProbeHTTP(testCTX, ts.URL,
-		config.Module{Timeout: time.Second, HTTP: config.HTTPProbe{
-			IPProtocolFallback: true,
-			HTTPClientConfig: pconfig.HTTPClientConfig{
-				TLSConfig: pconfig.TLSConfig{InsecureSkipVerify: true},
-			},
-			Letsencrypt: config.Letsencrypt{Org: "Acme Co"},
-		}}, registry, log.NewNopLogger())
-	body := recorder.Body.String()
-	if !result {
-		t.Fatalf("Fail if CA Letsencrypt test fails unexpectedly, got %s", body)
-	}
-	mfs, err := registry.Gather()
-	if err != nil {
-		t.Fatal(err)
-	}
-	expectedResults := map[string]float64{
-		"probe_ssl_letsencrypt": 1,
-	}
-	checkRegistryResults(expectedResults, mfs, t)
-}
-
-func TestSucceedIfCAIssuerAcmeCo(t *testing.T) {
-	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-	}))
-	defer ts.Close()
-
-	recorder := httptest.NewRecorder()
-	registry := prometheus.NewRegistry()
-	testCTX, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	result := ProbeHTTP(testCTX, ts.URL,
-		config.Module{Timeout: time.Second, HTTP: config.HTTPProbe{
-			IPProtocolFallback: true,
-			HTTPClientConfig: pconfig.HTTPClientConfig{
-				TLSConfig: pconfig.TLSConfig{InsecureSkipVerify: true},
-			},
-		}}, registry, log.NewNopLogger())
-	body := recorder.Body.String()
-	if !result {
-		t.Fatalf("Fail if CA Issuer AcmeCo test fails unexpectedly, got %s", body)
-	}
-	mfs, err := registry.Gather()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	found := false
-	labelFound := false
-	for _, mf := range mfs {
-		if mf.GetName() == "probe_ssl_issuer" {
-			found = true
-			for _, metric := range mf.GetMetric() {
-				for _, lp := range metric.Label {
-					if lp.GetName() == "issuer" && lp.GetValue() == "Acme Co" {
-						labelFound = true
-					}
-				}
-			}
-		}
-	}
-	if !found {
-		t.Fatal("probe_http_duration_seconds not found")
-	}
-	if !labelFound {
-		t.Fatalf("Label issuer=%s not found", "Acme Co")
-	}
-}
-
 func TestTLSConfigIsIgnoredForPlainHTTP(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	}))
@@ -722,5 +644,82 @@ func TestCookieJar(t *testing.T) {
 	body := recorder.Body.String()
 	if !result {
 		t.Fatalf("Redirect test failed unexpectedly, got %s", body)
+	}
+}
+func TestSucceedIfCALetsencrypt(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	}))
+	defer ts.Close()
+
+	recorder := httptest.NewRecorder()
+	registry := prometheus.NewRegistry()
+	testCTX, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	result := ProbeHTTP(testCTX, ts.URL,
+		config.Module{Timeout: time.Second, HTTP: config.HTTPProbe{
+			IPProtocolFallback: true,
+			HTTPClientConfig: pconfig.HTTPClientConfig{
+				TLSConfig: pconfig.TLSConfig{InsecureSkipVerify: true},
+			},
+			Letsencrypt: config.Letsencrypt{Org: "Acme Co"},
+		}}, registry, log.NewNopLogger())
+	body := recorder.Body.String()
+	if !result {
+		t.Fatalf("Fail if CA Letsencrypt test fails unexpectedly, got %s", body)
+	}
+	mfs, err := registry.Gather()
+	if err != nil {
+		t.Fatal(err)
+	}
+	expectedResults := map[string]float64{
+		"probe_ssl_letsencrypt": 1,
+	}
+	checkRegistryResults(expectedResults, mfs, t)
+}
+
+func TestSucceedIfCAIssuerAcmeCo(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	}))
+	defer ts.Close()
+
+	recorder := httptest.NewRecorder()
+	registry := prometheus.NewRegistry()
+	testCTX, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	result := ProbeHTTP(testCTX, ts.URL,
+		config.Module{Timeout: time.Second, HTTP: config.HTTPProbe{
+			IPProtocolFallback: true,
+			HTTPClientConfig: pconfig.HTTPClientConfig{
+				TLSConfig: pconfig.TLSConfig{InsecureSkipVerify: true},
+			},
+		}}, registry, log.NewNopLogger())
+	body := recorder.Body.String()
+	if !result {
+		t.Fatalf("Fail if CA Issuer AcmeCo test fails unexpectedly, got %s", body)
+	}
+	mfs, err := registry.Gather()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	found := false
+	labelFound := false
+	for _, mf := range mfs {
+		if mf.GetName() == "probe_ssl_issuer" {
+			found = true
+			for _, metric := range mf.GetMetric() {
+				for _, lp := range metric.Label {
+					if lp.GetName() == "issuer" && lp.GetValue() == "Acme Co" {
+						labelFound = true
+					}
+				}
+			}
+		}
+	}
+	if !found {
+		t.Fatal("probe_http_duration_seconds not found")
+	}
+	if !labelFound {
+		t.Fatalf("Label issuer=%s not found", "Acme Co")
 	}
 }
