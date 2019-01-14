@@ -177,6 +177,7 @@ func ProbeHTTP(ctx context.Context, target string, module config.Module, registr
 			Name: "probe_ssl_letsencrypt",
 			Help: "Indicates if the cert is issued by letsencrypt",
 		})
+
 		probeSSLIssuerGauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Name: "probe_ssl_issuer",
 			Help: "Returns the certificate issuer of the probe response",
@@ -437,7 +438,6 @@ func ProbeHTTP(ctx context.Context, target string, module config.Module, registr
 		if resp.TLS.PeerCertificates != nil &&
 			len(resp.TLS.PeerCertificates) > 0 {
 			probeSSLIssuerGauge.WithLabelValues(resp.TLS.PeerCertificates[0].Issuer.Organization[0]).Set(1.0)
-
 		}
 
 		if httpConfig.FailIfSSL {
